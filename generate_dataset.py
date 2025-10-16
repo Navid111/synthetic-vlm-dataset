@@ -73,7 +73,61 @@ def draw_shape(draw, shape_type, position, size, color):
             points.append((px, py))
         draw.polygon(points, fill=color)
 
-
+def generate_questions_from_annotations(annotations: List[Dict]) -> List[Dict]:
+    """Generate questions and answers from annotations"""
+    questions = []
+    
+    # 1. Description question
+    if len(annotations) == 1:
+        ann = annotations[0]
+        desc = f"A {ann['color']} {ann['shape']}."
+    else:
+        shape_descs = [f"a {ann['color']} {ann['shape']}" for ann in annotations]
+        desc = f"There are {', '.join(shape_descs[:-1])} and {shape_descs[-1]}."
+    
+    questions.append({
+        "question": "Describe this image.",
+        "answer": desc,
+        "question_type": "description"
+    })
+    
+    # 2. Color questions for each shape
+    for ann in annotations:
+        questions.append({
+            "question": f"What color is the {ann['shape']}?",
+            "answer": ann['color'],
+            "question_type": "color"
+        })
+    
+    # 3. Total count question
+    questions.append({
+        "question": "How many shapes are in this image?",
+        "answer": str(len(annotations)),
+        "question_type": "counting"
+    })
+    
+    # 4. Color-specific counting
+    color_counts = {}
+    for ann in annotations:
+        color_counts[ann['color']] = color_counts.get(ann['color'], 0) + 1
+    
+    for color, count in color_counts.items():
+        questions.append({
+            "question": f"How many {color} shapes are there?",
+            "answer": str(count),
+            "question_type": "counting"
+        })
+    
+    # 5. Position questions
+    for ann in annotations:
+        questions.append({
+            "question": f"Where is the {ann['color']} {ann['shape']}?",
+            "answer": ann['position'],
+            "question_type": "position"
+        })
+    
+    return questions
+'''
 def generate_captions(annotations):
     """Generate multiple caption styles for VLM training"""
     captions = []
@@ -107,7 +161,7 @@ def generate_captions(annotations):
         captions.append(qa)
     
     return captions
-
+'''
 
 def generate_image_and_caption(image_size, shapes, colors, positions, size_range, shapes_per_image_range):
     """Generate a single image with random shapes and corresponding caption"""
@@ -145,7 +199,7 @@ def generate_image_and_caption(image_size, shapes, colors, positions, size_range
         })
     
     # Generate natural language captions
-    captions = generate_captions(annotations)
+    captions = generate_questions_from_annotations(annotations)
     
     return img, annotations, captions
 
@@ -199,13 +253,16 @@ def main():
         # Save image
         img_filename = f"image_{i:06d}.png"
         img.save(f"{output_dir}/images/{img_filename}")
+        # Generate all questions upfront
+        questions = generate_questions_from_annotations(annotations)
         
         # Store metadata
         dataset.append({
             'image_id': i,
             'image_filename': img_filename,
             'annotations': annotations,
-            'captions': captions
+            'captions': captions,
+            'questions': questions
         })
     
     # Save dataset metadata

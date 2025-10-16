@@ -187,52 +187,46 @@ def evaluate_model(dataset_dir: str, model_name: str, output_path: str,
     
     # Process each image
     images_dir = Path(dataset_dir) / 'images'
-    
     for item in tqdm(dataset, desc="Evaluating"):
         image_path = images_dir / item['image_filename']
-        
+    
         try:
             image = Image.open(image_path).convert('RGB')
         except Exception as e:
             print(f"Warning: Could not load {image_path}: {e}")
             continue
+    
+    for qa in item['questions']:
+        question = qa['question']
+        expected_answer = qa['answer']
+        question_type = qa['question_type']
         
-        # Extract Q&A pairs from captions
-        qa_pairs = extract_qa_pairs(item['captions'])
-        
-        # Generate additional questions
-        qa_pairs.extend(generate_questions_from_annotations(item['annotations']))
-        
-        # Ask model each question
-        for question, expected_answer in qa_pairs:
-            try:
-                model_answer = model.answer_question(image, question)
-                is_correct, similarity = compare_answers(expected_answer, model_answer)
+        try:
+            model_answer = model.answer_question(image, question)
+            is_correct, similarity = compare_answers(expected_answer, model_answer)
+            
+            results.append({
+                'image_id': item['image_id'],
+                'image_filename': item['image_filename'],
+                'question': question,
+                'expected_answer': expected_answer,
+                'model_answer': model_answer,
+                'correct': is_correct,
+                'similarity_score': similarity,
+                'question_type': question_type
+            })
+            
+            # Update stats
+            if question_type not in stats_by_type:
+                stats_by_type[question_type] = {'correct': 0, 'total': 0}
+            
+            stats_by_type[question_type]['total'] += 1
+            if is_correct:
+                stats_by_type[question_type]['correct'] += 1
                 
-                question_type = detect_question_type(question)
-                
-                results.append({
-                    'image_id': item['image_id'],
-                    'image_filename': item['image_filename'],
-                    'question': question,
-                    'expected_answer': expected_answer,
-                    'model_answer': model_answer,
-                    'correct': is_correct,
-                    'similarity_score': similarity,
-                    'question_type': question_type
-                })
-                
-                # Update stats
-                if question_type not in stats_by_type:
-                    stats_by_type[question_type] = {'correct': 0, 'total': 0}
-                
-                stats_by_type[question_type]['total'] += 1
-                if is_correct:
-                    stats_by_type[question_type]['correct'] += 1
-                
-            except Exception as e:
-                print(f"Warning: Error processing question '{question}': {e}")
-                continue
+        except Exception as e:
+            print(f"Warning: Error processing question '{question}': {e}")
+            continue
     
     # Save results to CSV
     df = pd.DataFrame(results)
