@@ -117,6 +117,98 @@ random_seed: 42
   }
 ]
 ```
+## Model Evaluation
+
+Test Vision-Language Models (VLMs) on your synthetic dataset and measure their accuracy!
+
+### Supported Models
+
+- **BLIP** (Salesforce/blip-vqa-base) - Fast, accurate VQA model
+- **BLIP-2** (Salesforce/blip2-opt-2.7b) - Improved version with better reasoning
+- **InstructBLIP** (Salesforce/instructblip-vicuna-7b) - Instruction-tuned model
+
+### Installation
+
+Install evaluation dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+### Quick Start
+
+```bash
+# Evaluate BLIP on your dataset
+python evaluate_model.py --dataset-dir ./my_dataset --model blip
+
+# Evaluate on 100 samples only
+python evaluate_model.py --dataset-dir ./my_dataset --model blip --num-samples 100
+
+# Use specific GPU
+python evaluate_model.py --dataset-dir ./my_dataset --model blip --device cuda
+```
+
+### Output
+
+The evaluation generates:
+
+1. **CSV Results** (`evaluation_results.csv`):
+   - Every question asked
+   - Expected vs actual answers
+   - Correctness and similarity scores
+   - Question types
+
+2. **JSON Summary** (`evaluation_results_summary.json`):
+   - Overall accuracy
+   - Accuracy by question type
+   - Statistics and metrics
+
+### Analyze Results
+
+Generate visualizations and analysis:
+
+```bash
+python analyze_results.py --results evaluation_results.csv --output-dir ./analysis
+```
+
+This creates:
+- Accuracy charts by question type
+- Similarity score distributions
+- Example predictions (correct/incorrect)
+- Detailed analysis report
+
+### Compare Multiple Models
+
+```bash
+python compare_models.py --dataset-dir ./my_dataset --models blip blip2 --output comparison.csv
+```
+
+### Example Output
+
+```
+==========================================================
+EVALUATION SUMMARY
+==========================================================
+Model: blip
+Overall Accuracy: 87.3%
+Total Questions: 3000
+Correct Answers: 2619
+
+Accuracy by Question Type:
+  color          : 95.2% (800 questions)
+  counting       : 82.1% (600 questions)
+  position       : 88.4% (700 questions)
+  shape          : 91.3% (500 questions)
+  description    : 75.8% (400 questions)
+==========================================================
+```
+
+### Tips
+
+- Start with BLIP (fastest and requires less memory)
+- Use `--num-samples` to test on a subset first
+- BLIP-2 and InstructBLIP require more GPU memory
+- Use CPU mode if you don't have a GPU (slower but works)
 
 ### COCO Format (Object Detection)
 ```json
