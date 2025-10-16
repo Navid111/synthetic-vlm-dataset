@@ -1,0 +1,46 @@
+# Synthetic VLM Dataset Configuration
+
+# Number of images to generate
+num_images: 10000
+
+# Image dimensions [width, height]
+image_size: [512, 512]
+
+# Output directory
+output_dir: "synthetic_vlm_dataset"
+
+# Shapes to include in the dataset
+shapes:
+  - circle
+  - rectangle
+  - triangle
+  - ellipse
+  - polygon
+
+# Color palette (RGB values)
+colors:
+  red: [255, 0, 0]
+  blue: [0, 0, 255]
+  green: [0, 255, 0]
+  yellow: [255, 255, 0]
+  purple: [128, 0, 128]
+  orange: [255, 165, 0]
+  pink: [255, 192, 203]
+  cyan: [0, 255, 255]
+
+# Position options
+positions:
+  - top-left
+  - top-right
+  - bottom-left
+  - bottom-right
+  - center
+
+# Size range for shapes [min, max] in pixels
+size_range: [30, 80]
+
+# Number of shapes per image [min, max]
+shapes_per_image: [1, 3]
+
+# Random seed for reproducibility
+random_seed: 42
