@@ -289,7 +289,7 @@ def main():
     parser = argparse.ArgumentParser(description='Evaluate VLM models on synthetic dataset')
     parser.add_argument('--dataset-dir', type=str, required=True, help='Path to dataset directory')
     parser.add_argument('--model', type=str, default='blip', 
-                       choices=['blip', 'blip2', 'instructblip'],
+                       choices=['blip', 'blip2'],
                        help='Model to evaluate')
     parser.add_argument('--output', type=str, default='evaluation_results.csv',
                        help='Output CSV file path')

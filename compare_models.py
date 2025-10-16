@@ -52,7 +52,7 @@ def main():
     parser.add_argument('--dataset-dir', type=str, required=True,
                        help='Path to dataset directory')
     parser.add_argument('--models', type=str, nargs='+', required=True,
-                       choices=['blip', 'blip2', 'instructblip'],
+                       choices=['blip', 'blip2'],
                        help='Models to compare')
     parser.add_argument('--output', type=str, default='model_comparison.csv',
                        help='Output comparison CSV file')
