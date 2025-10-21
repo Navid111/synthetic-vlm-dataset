@@ -6,6 +6,7 @@ import os
 import argparse
 from tqdm import tqdm
 import yaml
+from typing import List
 
 # Define shapes, colors, and positions
 SHAPES = ['circle', 'rectangle', 'triangle', 'ellipse', 'polygon']

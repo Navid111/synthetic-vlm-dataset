@@ -196,10 +196,10 @@ def evaluate_model(dataset_dir: str, model_name: str, output_path: str,
             print(f"Warning: Could not load {image_path}: {e}")
             continue
     
-    for qa in item['questions']:
-        question = qa['question']
-        expected_answer = qa['answer']
-        question_type = qa['question_type']
+        for qa in item['questions']:
+            question = qa['question']
+            expected_answer = qa['answer']
+            question_type = qa['question_type']
         
         try:
             model_answer = model.answer_question(image, question)
