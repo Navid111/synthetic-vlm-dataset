@@ -200,33 +200,33 @@ def evaluate_model(dataset_dir: str, model_name: str, output_path: str,
             question = qa['question']
             expected_answer = qa['answer']
             question_type = qa['question_type']
-        
-        try:
-            model_answer = model.answer_question(image, question)
-            is_correct, similarity = compare_answers(expected_answer, model_answer)
             
-            results.append({
-                'image_id': item['image_id'],
-                'image_filename': item['image_filename'],
-                'question': question,
-                'expected_answer': expected_answer,
-                'model_answer': model_answer,
-                'correct': is_correct,
-                'similarity_score': similarity,
-                'question_type': question_type
-            })
-            
-            # Update stats
-            if question_type not in stats_by_type:
-                stats_by_type[question_type] = {'correct': 0, 'total': 0}
-            
-            stats_by_type[question_type]['total'] += 1
-            if is_correct:
-                stats_by_type[question_type]['correct'] += 1
+            try:
+                model_answer = model.answer_question(image, question)
+                is_correct, similarity = compare_answers(expected_answer, model_answer)
                 
-        except Exception as e:
-            print(f"Warning: Error processing question '{question}': {e}")
-            continue
+                results.append({
+                    'image_id': item['image_id'],
+                    'image_filename': item['image_filename'],
+                    'question': question,
+                    'expected_answer': expected_answer,
+                    'model_answer': model_answer,
+                    'correct': is_correct,
+                    'similarity_score': similarity,
+                    'question_type': question_type
+                })
+                
+                # Update stats
+                if question_type not in stats_by_type:
+                    stats_by_type[question_type] = {'correct': 0, 'total': 0}
+                
+                stats_by_type[question_type]['total'] += 1
+                if is_correct:
+                    stats_by_type[question_type]['correct'] += 1
+                    
+            except Exception as e:
+                print(f"Warning: Error processing question '{question}': {e}")
+                continue
     
     # Save results to CSV
     df = pd.DataFrame(results)
