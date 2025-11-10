@@ -283,8 +283,7 @@ def main():
     parser = argparse.ArgumentParser(description='Evaluate VLM models on synthetic dataset')
     parser.add_argument('--dataset-dir', type=str, required=True, help='Path to dataset directory')
     parser.add_argument('--model', type=str, default='blip', 
-                       choices=['blip', 'blip2'],
-                       help='Model to evaluate')
+                       help='Model to evaluate (e.g. blip, blip2, flan, clip, vision2seq)')
     parser.add_argument('--output', type=str, default='evaluation_results.csv',
                        help='Output CSV file path')
     parser.add_argument('--num-samples', type=int, default=None,
@@ -295,13 +294,21 @@ def main():
     
     args = parser.parse_args()
     
-    evaluate_model(
-        dataset_dir=args.dataset_dir,
-        model_name=args.model,
-        output_path=args.output,
-        num_samples=args.num_samples,
-        device=args.device
-    )
+    try:
+        evaluate_model(
+            dataset_dir=args.dataset_dir,
+            model_name=args.model,
+            output_path=args.output,
+            num_samples=args.num_samples,
+            device=args.device
+        )
+    except Exception as e:
+        # Provide a clearer message for unknown models or import errors
+        msg = str(e)
+        if 'Unknown model' in msg or 'Available models' in msg:
+            print(f"Model error: {msg}\nMake sure the model key is registered in models.vlm_wrapper.create_model and that required packages are installed.")
+        else:
+            raise
 
 
 if __name__ == "__main__":
