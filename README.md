@@ -46,6 +46,36 @@ python generate_dataset.py --num-images 10000 --output-dir ./dataset --seed 42
 python generate_dataset.py --config configs/dataset_config.yaml
 ```
 
+## DFD (Data Flow Diagram) generator
+
+A small standalone generator is included to create Data Flow Diagram (DFD)-style images with labeled boxes and directed arrows, together with per-image annotations and question-answer pairs. This is useful for testing VLMs on diagram understanding tasks (box content, counts, relations, and simple spatial questions).
+
+The script is `generate_dfd_dataset.py` and is intentionally standalone so it does not modify the existing shape generator.
+
+Basic usage:
+
+```bash
+# Generate 100 DFD images
+python generate_dfd_dataset.py --num-images 100 --output-dir ./dfd_dataset --seed 42
+
+```
+
+Outputs:
+
+- Images are saved to `<output-dir>/images/`.
+- Metadata (annotations and generated questions) is saved to `<output-dir>/dataset.json`.
+
+Options (selected):
+
+- `--num-images`: Number of images to generate (default: 100).
+- `--output-dir`: Directory to save images and metadata (default: `dfd_dataset`).
+- `--seed`: Random seed for reproducibility.
+- `--min-boxes` / `--max-boxes`: Minimum and maximum number of boxes per image.
+- `--min-edges` / `--max-edges`: Minimum and maximum number of directed arrows per image.
+
+The generated questions include counts (boxes/arrows), content queries (e.g., "What does the blue colored box say?"), and relation queries (e.g., "Where does the yellow colored box point to?").
+
+
 
 ## Configuration
 
