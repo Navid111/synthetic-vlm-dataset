@@ -19,8 +19,25 @@ DEFAULT_COLORS = {
 }
 
 
-def draw_box(draw: ImageDraw.ImageDraw, bbox: Tuple[int, int, int, int], fill_color: Tuple[int, int, int], outline=(0, 0, 0), text: str = None):
-    draw.rectangle(bbox, fill=fill_color, outline=outline, width=2)
+def draw_shape(draw: ImageDraw.ImageDraw, bbox: Tuple[int, int, int, int], fill_color: Tuple[int, int, int], outline=(0, 0, 0), text: str = None, shape: str = 'rectangle'):
+    x0, y0, x1, y1 = bbox
+    if shape == 'rectangle':
+        draw.rectangle(bbox, fill=fill_color, outline=outline, width=2)
+    elif shape == 'ellipse':
+        draw.ellipse(bbox, fill=fill_color, outline=outline, width=2)
+    elif shape == 'diamond':
+        cx = (x0 + x1) / 2
+        cy = (y0 + y1) / 2
+        pts = [(cx, y0), (x1, cy), (cx, y1), (x0, cy)]
+        draw.polygon(pts, fill=fill_color, outline=outline)
+    elif shape == 'rounded':
+        try:
+            draw.rounded_rectangle(bbox, radius=min((x1 - x0, y1 - y0)) // 6, fill=fill_color, outline=outline, width=2)
+        except Exception:
+            draw.rectangle(bbox, fill=fill_color, outline=outline, width=2)
+    else:
+        draw.rectangle(bbox, fill=fill_color, outline=outline, width=2)
+
     if text:
         font = ImageFont.load_default()
         try:
@@ -34,7 +51,6 @@ def draw_box(draw: ImageDraw.ImageDraw, bbox: Tuple[int, int, int, int], fill_co
             except Exception:
                 text_w, text_h = (len(text) * 6, 10)
 
-        x0, y0, x1, y1 = bbox
         tx = x0 + max(4, (x1 - x0 - text_w) // 2)
         ty = y0 + max(2, (y1 - y0 - text_h) // 2)
         draw.text((tx, ty), text, fill=(0, 0, 0), font=font)
@@ -56,7 +72,7 @@ def generate_questions_from_dfd(nodes: List[Dict], edges: List[Dict]) -> List[Di
     questions = []
     # Counting
     questions.append({
-        'question': 'How many boxes are there?',
+        'question': 'How many shapes are there?',
         'answer': str(len(nodes)),
         'question_type': 'counting'
     })
@@ -74,9 +90,19 @@ def generate_questions_from_dfd(nodes: List[Dict], edges: List[Dict]) -> List[Di
     for color in ['blue', 'yellow', 'red', 'green', 'purple']:
         if color in color_to_nodes:
             questions.append({
-                'question': f'What does the {color} colored box say?',
+                'question': f'What does the {color} colored shape say?',
                 'answer': color_to_nodes[color][0]['label'],
                 'question_type': 'content'
+            })
+            break
+
+    # What is the shape of a colored shape?
+    for color in ['blue', 'yellow', 'red', 'green', 'purple']:
+        if color in color_to_nodes:
+            questions.append({
+                'question': f'What is the shape of the {color} colored shape?',
+                'answer': color_to_nodes[color][0].get('shape', 'rectangle'),
+                'question_type': 'attribute'
             })
             break
 
@@ -87,7 +113,7 @@ def generate_questions_from_dfd(nodes: List[Dict], edges: List[Dict]) -> List[Di
         if outs:
             dest = next(n for n in nodes if n['id'] == outs[0]['to'])
             questions.append({
-                'question': 'Where does the yellow colored box point to?',
+                'question': 'Where does the yellow colored shape point to?',
                 'answer': dest['label'],
                 'question_type': 'position'
             })
@@ -127,8 +153,9 @@ def generate_dfd_image_and_annotation(image_size=(512, 512), colors=DEFAULT_COLO
         color_rgb = tuple(colors[color_name])
         label = random.choice(labels_pool)
         bbox = (x, y, x + bw, y + bh)
-        draw_box(draw, bbox, fill_color=color_rgb, outline=(0, 0, 0), text=label)
-        nodes.append({'id': i, 'label': label, 'color': color_name, 'bbox': bbox, 'center': (x + bw // 2, y + bh // 2)})
+        shape_name = random.choice(['rectangle', 'ellipse', 'diamond', 'rounded'])
+        draw_shape(draw, bbox, fill_color=color_rgb, outline=(0, 0, 0), text=label, shape=shape_name)
+        nodes.append({'id': i, 'label': label, 'color': color_name, 'shape': shape_name, 'bbox': bbox, 'center': (x + bw // 2, y + bh // 2)})
 
     # Edges
     max_possible = max(0, num_boxes * (num_boxes - 1))
@@ -152,7 +179,7 @@ def generate_dfd_image_and_annotation(image_size=(512, 512), colors=DEFAULT_COLO
 
     annotations = []
     for n in nodes:
-        annotations.append({'id': n['id'], 'label': n['label'], 'color': n['color'], 'bbox': n['bbox'], 'center': n['center']})
+        annotations.append({'id': n['id'], 'label': n['label'], 'color': n['color'], 'shape': n.get('shape', 'rectangle'), 'bbox': n['bbox'], 'center': n['center']})
 
     return img, annotations, questions
 
