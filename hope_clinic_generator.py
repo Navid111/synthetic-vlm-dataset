@@ -185,61 +185,23 @@ def draw_connection(draw, start_bbox, end_bbox, label):
 
 def generate_qa_for_image(layout):
     """
-    Generates QA pairs.
-    Some are STATIC (always true for Hope Clinic).
-    Some are DYNAMIC (depend on the random layout).
+    Generates QA pairs focused on entity identification.
     """
     questions = []
     
-    # 1. Static Counting Questions (Sanity Checks for Model)
+    # 1. Count entities question
     questions.append({
-        'question': 'How many External Entities are in this diagram?',
+        'question': 'How many entities are there?',
         'answer': '5',
-        'type': 'counting_static'
-    })
-    questions.append({
-        'question': 'How many Processes are in this diagram?',
-        'answer': '5',
-        'type': 'counting_static'
+        'type': 'counting'
     })
     
-    # 2. Static Topology Questions
+    # 2. Name each entity question
+    entity_names = ['Lisa', 'Clara', 'Susan', 'Fred', 'Tom']
     questions.append({
-        'question': 'Which process does Lisa interact with?',
-        'answer': 'Process 1 (Appointment Management)',
-        'type': 'topology_static'
-    })
-    questions.append({
-        'question': 'What data store feeds into Process 2 (Expense Mgmt)?',
-        'answer': 'D1 (Appointments)',
-        'type': 'topology_static'
-    })
-
-    # 3. DYNAMIC Spatial Questions (The "VLM Test" part)
-    # We compare centroids
-    
-    # Helper for centroid
-    def get_center(bbox): return ((bbox[0]+bbox[2])/2, (bbox[1]+bbox[3])/2)
-    
-    lisa_c = get_center(layout['LISA'])
-    p1_c = get_center(layout['P1'])
-    
-    # Is Lisa left or right of P1?
-    relation = "left" if lisa_c[0] < p1_c[0] else "right"
-    questions.append({
-        'question': 'Is Lisa located to the left or right of Process 1?',
-        'answer': relation,
-        'type': 'spatial_dynamic'
-    })
-    
-    # Is Tom above or below P5?
-    tom_c = get_center(layout['TOM'])
-    p5_c = get_center(layout['P5'])
-    relation_v = "above" if tom_c[1] < p5_c[1] else "below"
-    questions.append({
-        'question': 'Is the Tom entity positioned above or below Process 5?',
-        'answer': relation_v,
-        'type': 'spatial_dynamic'
+        'question': 'Name each entity.',
+        'answer': ', '.join(entity_names),
+        'type': 'naming'
     })
 
     return questions
